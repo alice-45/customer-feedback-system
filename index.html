@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Customer Feedback Form | FeedbackHub</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================
+     HEADER
+===================================== -->
+
+<header class="header">
+
+    <div class="logo">
+        💬 FeedbackHub
+    </div>
+
+    <a href="{{ url_for('admin') }}"
+       class="customer-btn">
+
+        📊 Admin Dashboard
+
+    </a>
+
+</header>
+
+
+
+<!-- =====================================
+     CUSTOMER HERO
+===================================== -->
+
+<section class="customer-hero">
+
+    <div class="hero-content">
+
+        <div class="hero-icon">
+            💬
+        </div>
+
+        <h1>
+            Customer Feedback Form
+        </h1>
+
+        <p>
+            We value your experience. Please take a
+            moment to share your feedback with us.
+        </p>
+
+        <div class="hero-points">
+
+            <span>
+                ✓ Quick & Easy
+            </span>
+
+            <span>
+                ✓ Your Opinion Matters
+            </span>
+
+            <span>
+                ✓ Help Us Improve
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================
+     MAIN FORM
+===================================== -->
+
+<main class="customer-container">
+
+
+    <!-- FORM CARD -->
+
+    <section class="feedback-form-card">
+
+
+        <div class="form-header">
+
+            <span class="form-badge">
+                📝 FEEDBACK FORM
+            </span>
+
+            <h2>
+                Tell Us About Your Experience
+            </h2>
+
+            <p>
+                Your honest feedback helps us provide
+                better products and services.
+            </p>
+
+        </div>
+
+
+
+        <!-- FLASH MESSAGES -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="message {{ category }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+
+
+        <!-- =================================
+             FORM
+        ================================== -->
+
+        <form action="{{ url_for('submit_feedback') }}"
+              method="POST"
+              id="feedbackForm">
+
+
+            <!-- NAME -->
+
+            <div class="form-group">
+
+                <label for="name">
+                    👤 Full Name
+                </label>
+
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Enter your full name"
+                    required
+                    maxlength="100">
+
+            </div>
+
+
+
+            <!-- EMAIL -->
+
+            <div class="form-group">
+
+                <label for="email">
+                    📧 Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email address"
+                    required
+                    maxlength="120">
+
+            </div>
+
+
+
+            <!-- RATING -->
+
+            <div class="form-group">
+
+                <label>
+                    ⭐ How would you rate your experience?
+                </label>
+
+
+                <div class="star-rating"
+                     id="starRating">
+
+
+                    <button type="button"
+                            class="star"
+                            data-rating="1"
+                            aria-label="1 star">
+
+                        ★
+
+                    </button>
+
+
+                    <button type="button"
+                            class="star"
+                            data-rating="2"
+                            aria-label="2 stars">
+
+                        ★
+
+                    </button>
+
+
+                    <button type="button"
+                            class="star"
+                            data-rating="3"
+                            aria-label="3 stars">
+
+                        ★
+
+                    </button>
+
+
+                    <button type="button"
+                            class="star"
+                            data-rating="4"
+                            aria-label="4 stars">
+
+                        ★
+
+                    </button>
+
+
+                    <button type="button"
+                            class="star"
+                            data-rating="5"
+                            aria-label="5 stars">
+
+                        ★
+
+                    </button>
+
+
+                </div>
+
+
+                <input
+                    type="hidden"
+                    name="rating"
+                    id="selected-rating"
+                    value="">
+
+
+                <div class="rating-text"
+                     id="ratingText">
+
+                    Please select a rating
+
+                </div>
+
+            </div>
+
+
+
+            <!-- FEEDBACK -->
+
+            <div class="form-group">
+
+                <label for="feedback">
+                    💭 Your Feedback
+                </label>
+
+                <textarea
+                    id="feedback"
+                    name="feedback"
+                    rows="6"
+                    maxlength="500"
+                    placeholder="Tell us about your experience..."
+                    required></textarea>
+
+
+                <div class="character-count">
+
+                    <span id="charCount">
+                        0
+                    </span>
+
+                    / 500 characters
+
+                </div>
+
+            </div>
+
+
+
+            <!-- SUBMIT -->
+
+            <button type="submit"
+                    class="submit-btn">
+
+                <span>
+                    Submit Feedback
+                </span>
+
+                <span>
+                    →
+                </span>
+
+            </button>
+
+
+        </form>
+
+
+
+        <!-- PRIVACY NOTE -->
+
+        <div class="privacy-note">
+
+            🔒 Your feedback is secure and helps us improve.
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         WHY YOUR FEEDBACK MATTERS
+    ====================================== -->
+
+    <section class="why-feedback">
+
+        <div class="section-title">
+
+            <span>
+                💙
+            </span>
+
+            <h2>
+                Why Your Feedback Matters
+            </h2>
+
+            <p>
+                Every response helps us understand
+                and serve our customers better.
+            </p>
+
+        </div>
+
+
+        <div class="benefit-grid">
+
+
+            <!-- CARD 1 -->
+
+            <div class="benefit-card">
+
+                <div class="benefit-icon">
+                    👂
+                </div>
+
+                <h3>
+                    We Listen
+                </h3>
+
+                <p>
+                    Your feedback helps us understand
+                    what our customers really need.
+                </p>
+
+            </div>
+
+
+
+            <!-- CARD 2 -->
+
+            <div class="benefit-card">
+
+                <div class="benefit-icon">
+                    🚀
+                </div>
+
+                <h3>
+                    We Improve
+                </h3>
+
+                <p>
+                    Your suggestions help us improve
+                    our products and services.
+                </p>
+
+            </div>
+
+
+
+            <!-- CARD 3 -->
+
+            <div class="benefit-card">
+
+                <div class="benefit-icon">
+                    ❤️
+                </div>
+
+                <h3>
+                    We Care
+                </h3>
+
+                <p>
+                    Your experience and satisfaction
+                    are important to us.
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- =====================================
+     FOOTER
+===================================== -->
+
+<footer class="footer">
+
+    <h3>
+        💬 FeedbackHub
+    </h3>
+
+    <p>
+        Customer Feedback Management System
+    </p>
+
+</footer>
+
+
+
+<!-- JAVASCRIPT -->
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+
+</body>
+
+</html>
