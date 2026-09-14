@@ -493,13 +493,7 @@ def delete_feedback(feedback_id):
 # START APPLICATION
 # ==========================================
 
+create_table()
+
 if __name__ == "__main__":
-
-    # Create table if it does not exist
-
-    create_table()
-
-
-    # Start Flask server
-
     app.run(debug=True)
