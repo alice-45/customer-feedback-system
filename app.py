@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-import sqlite3
+import os
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from datetime import datetime
 from functools import wraps
 
@@ -10,17 +12,28 @@ from functools import wraps
 
 app = Flask(__name__)
 
-app.secret_key = "customer-feedback-secret-key"
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "customer-feedback-secret-key"
+)
 
-DATABASE = "feedback.db"
+# PostgreSQL database URL
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 
 # ==========================================
 # ADMIN LOGIN DETAILS
 # ==========================================
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin123"
+ADMIN_USERNAME = os.environ.get(
+    "ADMIN_USERNAME",
+    "admin"
+)
+
+ADMIN_PASSWORD = os.environ.get(
+    "ADMIN_PASSWORD",
+    "admin123"
+)
 
 
 # ==========================================
@@ -46,9 +59,20 @@ def login_required(function):
 
 def get_db_connection():
 
-    connection = sqlite3.connect(DATABASE)
+    database_url = DATABASE_URL
 
-    connection.row_factory = sqlite3.Row
+    # PostgreSQL connection
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace(
+            "postgres://",
+            "postgresql://",
+            1
+        )
+
+    connection = psycopg2.connect(
+        database_url,
+        cursor_factory=RealDictCursor
+    )
 
     return connection
 
@@ -61,9 +85,11 @@ def create_table():
 
     connection = get_db_connection()
 
-    connection.execute("""
+    cursor = connection.cursor()
+
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS feedback (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             email TEXT NOT NULL,
             rating INTEGER NOT NULL,
@@ -75,6 +101,7 @@ def create_table():
 
     connection.commit()
 
+    cursor.close()
     connection.close()
 
 
@@ -97,13 +124,25 @@ def submit_feedback():
 
     # Get data from HTML form
 
-    name = request.form.get("name", "").strip()
+    name = request.form.get(
+        "name",
+        ""
+    ).strip()
 
-    email = request.form.get("email", "").strip()
+    email = request.form.get(
+        "email",
+        ""
+    ).strip()
 
-    rating = request.form.get("rating", "").strip()
+    rating = request.form.get(
+        "rating",
+        ""
+    ).strip()
 
-    feedback = request.form.get("feedback", "").strip()
+    feedback = request.form.get(
+        "feedback",
+        ""
+    ).strip()
 
 
     # ======================================
@@ -177,12 +216,14 @@ def submit_feedback():
 
 
     # ======================================
-    # SAVE FEEDBACK INTO DATABASE
+    # SAVE FEEDBACK INTO POSTGRESQL
     # ======================================
 
     connection = get_db_connection()
 
-    connection.execute("""
+    cursor = connection.cursor()
+
+    cursor.execute("""
         INSERT INTO feedback
         (
             name,
@@ -192,7 +233,7 @@ def submit_feedback():
             category,
             created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
     """, (
         name,
         email,
@@ -204,6 +245,7 @@ def submit_feedback():
 
     connection.commit()
 
+    cursor.close()
     connection.close()
 
 
@@ -290,7 +332,10 @@ def logout():
 
     # Remove admin login session
 
-    session.pop("admin_logged_in", None)
+    session.pop(
+        "admin_logged_in",
+        None
+    )
 
     flash(
         "You have been logged out successfully.",
@@ -312,14 +357,18 @@ def admin():
 
     connection = get_db_connection()
 
+    cursor = connection.cursor()
+
 
     # Get all feedback
 
-    feedback_list = connection.execute("""
+    cursor.execute("""
         SELECT *
         FROM feedback
         ORDER BY id DESC
-    """).fetchall()
+    """)
+
+    feedback_list = cursor.fetchall()
 
 
     # ======================================
@@ -427,6 +476,7 @@ def admin():
 
     # Close database
 
+    cursor.close()
     connection.close()
 
 
@@ -468,15 +518,18 @@ def delete_feedback(feedback_id):
 
     connection = get_db_connection()
 
+    cursor = connection.cursor()
 
-    connection.execute(
-        "DELETE FROM feedback WHERE id = ?",
+
+    cursor.execute(
+        "DELETE FROM feedback WHERE id = %s",
         (feedback_id,)
     )
 
 
     connection.commit()
 
+    cursor.close()
     connection.close()
 
 
@@ -490,10 +543,18 @@ def delete_feedback(feedback_id):
 
 
 # ==========================================
-# START APPLICATION
+# CREATE TABLE WHEN APPLICATION STARTS
 # ==========================================
 
 create_table()
 
+
+# ==========================================
+# START APPLICATION
+# ==========================================
+
 if __name__ == "__main__":
-    app.run(debug=True)
+
+    app.run(
+        debug=True
+    )
